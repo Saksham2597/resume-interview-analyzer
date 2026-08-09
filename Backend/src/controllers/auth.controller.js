@@ -3,6 +3,18 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const tokenBlacklistModel = require("../models/blacklist.model")
 
+const getCookieOptions = (req) => {
+    const isHttps = req.secure || req.headers["x-forwarded-proto"] === "https" || process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+    return {
+        httpOnly: true,
+        secure: isHttps,
+        sameSite: isHttps ? "none" : "lax",
+        maxAge: 24 * 60 * 60 * 1000
+    };
+};
+
+const getJwtSecret = () => process.env.JWT_SECRET || process.env.jwt_secret;
+
 /**
  * @name registerUserController
  * @description register a new user, expects username, email and password in the request body
@@ -38,11 +50,11 @@ async function registerUserController(req, res) {
 
     const token = jwt.sign(
         { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
+        getJwtSecret(),
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+    res.cookie("token", token, getCookieOptions(req))
 
 
     res.status(201).json({
@@ -84,11 +96,11 @@ async function loginUserController(req, res) {
 
     const token = jwt.sign(
         { id: user._id, username: user.username },
-        process.env.JWT_SECRET,
+        getJwtSecret(),
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+    res.cookie("token", token, getCookieOptions(req))
     res.status(200).json({
         message: "User loggedIn successfully.",
         user: {
@@ -112,7 +124,9 @@ async function logoutUserController(req, res) {
         await tokenBlacklistModel.create({ token })
     }
 
-    res.clearCookie("token")
+    const cookieOpts = getCookieOptions(req);
+    delete cookieOpts.maxAge;
+    res.clearCookie("token", cookieOpts)
 
     res.status(200).json({
         message: "User logged out successfully"

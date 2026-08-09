@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://resume-interview-analyzer.onrender.com",
+    baseURL: import.meta.env.VITE_API_URL || "https://resume-interview-analyzer.onrender.com",
     withCredentials: true,
 })
 

@@ -1,95 +1,148 @@
-# AI Resume & Interview Analyzer
+# AI Interview Prep Assistant
 
-An intelligent, full-stack web application that leverages Google's Gemini AI to analyze a candidate's resume and self-description against a target job description. It automatically generates personalized interview preparation strategies, mock questions, skill gap analysis, and even a tailored ATS-friendly PDF resume.
+An AI-powered interview preparation platform. Upload your resume, paste a job description, and add a short self-description — the app analyzes your fit, generates a personalized interview report, and produces a tailored, ATS-friendly resume PDF.
 
-## ✨ Features
+Built as a full-stack MERN-style application: a React (Vite) frontend and a Node/Express backend, powered by Google's Gemini API for report and resume generation.
 
-- **Personalized Interview Prep:** Generates a day-by-day preparation plan tailored to the user's specific skill gaps and the target job description.
-- **AI Mock Questions:** Provides both technical and behavioral interview questions complete with intentions and suggested answering strategies.
-- **Skill Gap Analysis:** Highlights missing skills in the candidate's profile with assigned severities (low, medium, high).
-- **Tailored Resume Generation:** Uses AI and Puppeteer to dynamically generate and download a visually appealing, 1-2 page, ATS-friendly PDF resume tailored directly to the target job description.
-- **User Authentication:** Secure JWT-based authentication system with HTTP-only cross-site cookies.
-- **History Tracking:** Saves all past generated interview reports to the user's dashboard for future reference.
+**Live app:** _add your Vercel frontend URL here_
+**API:** _add your Render backend URL here_
 
-## 🚀 Tech Stack
+---
 
-### Frontend
-- **React.js (Vite):** Fast, modern frontend framework.
-- **SCSS:** Advanced styling for a clean, professional, and responsive user interface.
-- **Axios:** HTTP client for robust API communication.
-- **React Router:** Client-side routing.
+## Features
 
-### Backend
-- **Node.js & Express.js:** Scalable backend server architecture.
-- **MongoDB & Mongoose:** NoSQL database and object data modeling.
-- **Google Gen AI SDK (Gemini):** Advanced LLM integration for analyzing text and returning structured JSON outputs.
-- **Puppeteer & @sparticuz/chromium:** Headless browser integration for dynamic HTML-to-PDF resume generation, optimized for serverless/Linux environments.
-- **PDF-Parse:** Extracts text data from uploaded resume PDFs.
-- **JWT & Bcrypt:** Secure authentication and password hashing.
+- **User authentication** — register/login with JWT stored in an HTTP-only cookie, plus a token blacklist on logout.
+- **AI interview report generation** — upload a resume (PDF), job description, and self-description; Gemini returns a structured report:
+  - Match score (0–100) against the job description
+  - Technical questions, with interviewer intention and how to answer
+  - Behavioral questions, with interviewer intention and how to answer
+  - Skill gaps with severity (low / medium / high)
+  - A day-by-day preparation plan
+- **Report history** — view all past interview reports for the logged-in user.
+- **AI resume generation** — generate a tailored, ATS-friendly resume (rendered from HTML to PDF via Puppeteer) based on the same inputs.
+- **Protected routes** on the frontend, gated behind authentication.
 
-## 🛠️ Local Development Setup
+## Tech Stack
+
+**Backend**
+- Node.js + Express 5
+- MongoDB Atlas + Mongoose
+- Google Gen AI SDK (`@google/genai`, Gemini models) with Zod schemas for structured JSON output
+- JWT auth (`jsonwebtoken`) + `bcryptjs` for password hashing
+- `multer` for resume (PDF) uploads, `pdf-parse` for text extraction
+- `puppeteer` for HTML → PDF rendering of generated resumes
+- Deployed on **Render** (chosen for native Puppeteer/Chromium support)
+
+**Frontend**
+- React 19 + Vite
+- React Router 7
+- Axios for API calls
+- Sass (SCSS) for styling
+- Deployed on **Vercel**
+
+## Project Structure
+
+```
+resume-interview-analyzer/
+├── Backend/
+│   ├── server.js                  # entry point, connects DB, starts server
+│   └── src/
+│       ├── app.js                 # Express app setup, middleware, routes
+│       ├── config/database.js     # MongoDB connection
+│       ├── controllers/           # auth & interview controllers
+│       ├── middlewares/           # JWT auth guard, multer file upload
+│       ├── models/                # User, InterviewReport, token blacklist
+│       ├── routes/                # /api/auth, /api/interview
+│       └── services/ai.service.js # Gemini prompts & PDF generation
+└── Frontend/
+    └── src/
+        ├── app.routes.jsx         # route definitions
+        └── features/
+            ├── auth/               # login/register pages, auth context, API calls
+            └── interview/          # home, interview report pages, API calls
+```
+
+## API Overview
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Register a new user |
+| POST | `/api/auth/login` | Public | Log in with email/password |
+| GET | `/api/auth/logout` | Public | Clear auth cookie, blacklist token |
+| GET | `/api/auth/get-me` | Private | Get current logged-in user |
+| POST | `/api/interview/` | Private | Generate an interview report (resume PDF + job description + self-description) |
+| GET | `/api/interview/` | Private | Get all interview reports for the logged-in user |
+| GET | `/api/interview/report/:interviewId` | Private | Get a specific interview report |
+| POST | `/api/interview/resume/pdf/:interviewReportId` | Private | Generate and download a tailored resume PDF |
+
+## Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- MongoDB connection string
-- Google Gemini API Key
+
+- Node.js (v18+ recommended)
+- A MongoDB instance (local or Atlas)
+- A Google Gemini API key ([Google AI Studio](https://aistudio.google.com/))
 
 ### Backend Setup
-1. Navigate to the backend directory:
-   ```bash
-   cd Backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file in the `Backend` directory with the following variables:
-   ```env
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret_key
-   GOOGLE_GENAI_API_KEY=your_gemini_api_key
-   CLIENT_URL=http://localhost:5173
-   ```
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+
+```bash
+cd Backend
+npm install
+```
+
+Create a `.env` file in `Backend/`:
+
+```
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+GOOGLE_GENAI_API_KEY=your_gemini_api_key
+FRONTEND_URL=http://localhost:5173
+```
+
+Run the dev server:
+
+```bash
+npm run dev
+```
+
+The API runs on `http://localhost:3000`.
 
 ### Frontend Setup
-1. Navigate to the frontend directory:
-   ```bash
-   cd Frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file in the `Frontend` directory with the following variables:
-   ```env
-   VITE_API_URL=http://localhost:3000
-   ```
-4. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
 
-## 📦 Deployment (Render)
+```bash
+cd Frontend
+npm install
+npm run dev
+```
 
-This project is optimized for deployment on [Render](https://render.com). 
+Create a `.env` file in `Frontend/` pointing at your backend:
 
-**Backend Configuration:**
-- Create a new Web Service using the `Backend` directory.
-- Build Command: `npm install`
-- Start Command: `node server.js`
-- Ensure all environment variables (including `CLIENT_URL`) are set in the Render Dashboard.
-- Puppeteer relies on `@sparticuz/chromium` which downloads the necessary Chromium binaries for PDF generation in Linux environments.
+```
+VITE_API_URL=http://localhost:3000
+```
 
-**Frontend Configuration:**
-- Create a new Static Site using the `Frontend` directory.
-- Build Command: `npm run build`
-- Publish Directory: `dist`
-- Set the `VITE_API_URL` environment variable to your deployed backend URL.
+The app runs on `http://localhost:5173` (the backend's CORS config expects this origin in development).
 
-## 📄 License
+## Deployment
 
-This project is open-source and available under the ISC License.
+This project is deployed as three independent services:
+
+| Layer | Platform | Notes |
+|---|---|---|
+| Frontend | Vercel | Static build of the Vite app |
+| Backend | Render | Chosen over serverless platforms for native Puppeteer/Chromium support |
+| Database | MongoDB Atlas | Managed cluster |
+
+When deploying, make sure:
+- The backend's CORS origin is set to the deployed frontend URL (not `localhost`).
+- The frontend's `VITE_API_URL` points to the deployed backend URL.
+- Environment variables (`MONGO_URI`, `JWT_SECRET`, `GOOGLE_GENAI_API_KEY`) are set in Render's dashboard, not committed to the repo.
+
+## Notes
+
+- Resume uploads are capped at 3MB and processed in memory (not written to disk).
+- Generated resume PDFs are produced by rendering AI-generated HTML through Puppeteer, so a Chromium download happens as part of `npm install` in `Backend/`.
+
+## License
+
+No license specified yet — add one (e.g. MIT) if you plan to open this up for contributions.

@@ -1,11 +1,32 @@
 # AI Interview Prep Assistant
 
-An AI-powered interview preparation platform. Upload your resume, paste a job description, and add a short self-description — the app analyzes your fit, generates a personalized interview report, and produces a tailored, ATS-friendly resume PDF.
+An AI-powered platform that analyzes your resume against a target job
+description, identifies skill gaps, generates personalized interview
+questions and preparation plans, and creates a tailored ATS-friendly resume.
+
+Upload your resume → paste the job description → get a personalized
+interview strategy and optimized resume.
 
 Built as a full-stack MERN-style application: a React (Vite) frontend and a Node/Express backend, powered by Google's Gemini API for report and resume generation.
 
-**Live app:** _add your Vercel frontend URL here_
-**API:** _add your Render backend URL here_
+## Why I Built This
+
+Interview preparation often requires manually comparing a resume against a job description and figuring out what to study next.
+
+I built this platform to automate that process using structured LLM output, while keeping the application fully personalized to the candidate's resume and target role.
+
+## Highlights
+
+- 🤖 Personalized interview preparation using Gemini
+- 📄 Resume parsing and ATS-friendly resume generation
+- 🔐 JWT authentication with HTTP-only cookies
+- 📊 Structured AI-generated interview reports
+- 🗄️ Persistent report history with MongoDB
+- 🖥️ React + Express full-stack architecture
+- 🚀 Deployed with Vercel + Render + MongoDB Atlas
+
+**Live app:** https://resume-interview-analyzer-ui.onrender.com
+**API:** https://resume-interview-analyzer.onrender.com
 
 ---
 
@@ -142,7 +163,3 @@ When deploying, make sure:
 
 - Resume uploads are capped at 3MB and processed in memory (not written to disk).
 - Generated resume PDFs are produced by rendering AI-generated HTML through Puppeteer, so a Chromium download happens as part of `npm install` in `Backend/`.
-
-## License
-
-No license specified yet — add one (e.g. MIT) if you plan to open this up for contributions.

@@ -36,6 +36,9 @@ const interviewRouter = require("./routes/interview.routes")
 app.use("/api/auth", authRouter)
 app.use("/api/interview", interviewRouter)
 
-
+// Health check route for Uptime Monitors
+app.get("/", (req, res) => {
+    res.status(200).send("API is running!");
+});
 
 module.exports = app
